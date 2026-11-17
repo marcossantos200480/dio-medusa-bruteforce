@@ -1,0 +1,33 @@
+# =============================================================================
+# senhas.txt - senhas fracas classicas para laboratorio (Medusa -M ftp -P)
+# Formato: uma senha por linha. Linhas com '#' sao comentarios.
+# ATENCAO: nunca reutilize estas senhas em sistemas reais.
+# =============================================================================
+
+# --- Senhas padrao do Metasploitable 2 --------------------------------------
+msfadmin
+user
+password
+postgres
+service
+
+# --- Senhas genericas mais usadas em ambientes de teste ---------------------
+123456
+12345678
+123456789
+password1
+Password1
+admin
+admin123
+root
+toor
+test
+teste
+guest
+letmein
+qwerty
+abc123
+changeme
+senha
+senha123
+P@ssw0rd
