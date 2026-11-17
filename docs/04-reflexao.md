@@ -27,22 +27,91 @@ são contornadas; defesas em camadas não.**
 
 ## 2. O que eu aprendi sobre o Medusa
 
-*(reescreva com as suas observações)*
+Executando os três cenários deste laboratório, quatro coisas ficaram claras.
 
-- O Medusa é **modular**: a mesma ferramenta ataca FTP, web, SMB, SSH, MySQL...
-  Só o `-M` e os `-m` mudam. Isso faz dele um bom objeto de estudo: você aprende
-  **um** modelo mental e aplica em vários protocolos.
-- Ele é **paralelo por padrão** (`-t`, `-T`), o que o torna rápido — e barulhento.
-  Contra um Apache de 2009, `-t 100` derruba o serviço e produz **falsos
-  negativos**, que são piores que "não funcionou": você conclui que a senha não
-  está na lista, quando na verdade o alvo parou de responder.
-- O **`-c`** (espera em µs para validar o socket) foi o detalhe mais inesperado.
-  Sem `-c 1000`, o ataque ao vsftpd "falha" — não porque a senha está errada,
-  mas porque a conexão morre entre as tentativas. É um exemplo perfeito de como
-  a **mecânica de rede** importa tanto quanto a ferramenta.
-- No **`web-form`**, a fragilidade é evidente: `FORM-DATA` na ordem errada,
-  `DENY-SIGNAL` com o texto errado, ou um token anti-CSRF — qualquer um faz o
-  ataque falhar silenciosamente (ou, pior, reportar tudo como sucesso).
+**1. O Medusa é modular — e isso é uma faca de dois gumes.**
+A mesma ferramenta ataca FTP (`-M ftp`), formulário HTML (`-M web-form`) e SMB
+(`-M smbnt`). Você aprende **um** modelo mental e aplica em vários protocolos.
+Mas a sintaxe de cada módulo é rígida, e escolher o módulo errado não gera erro:
+gera **resultado errado com aparência de sucesso**.
+
+**2. O `-c` (espera em µs para validar o socket) foi o detalhe mais inesperado.**
+Sem `-c 1000`, o ataque ao vsftpd "falha" — não porque a senha está errada, mas
+porque um mecanismo anti-bruteforce do serviço **fecha a conexão** após algumas
+tentativas. O Medusa continua tentando enviar credenciais em um socket morto e
+reporta erro de conexão para tudo.
+
+**3. O `-e ns` resolve mais casos do que qualquer wordlist.**
+No cenário FTP, `-e ns` encontrou `user:user` e `msfadmin:msfadmin` em 40
+segundos. A senha igual ao nome de usuário é um padrão tão comum que vale testá-lo
+**antes** de qualquer dicionário. Meu primeiro teste, sem essa flag, terminou sem
+nenhum acerto — a senha certa simplesmente não estava na minha lista.
+
+**4. No `web-form`, a fragilidade é estrutural.**
+`FORM-DATA` na ordem errada, `DENY-SIGNAL` com o texto errado, ou um token
+anti-CSRF: qualquer um dos três faz o ataque falhar silenciosamente — ou, pior,
+reportar tudo como sucesso.
+
+---
+
+### O erro que me ensinou o que é um falso positivo
+
+![Medusa reportando falsos positivos com o módulo http](../images/07-falso-positivo.jpg)
+
+Na primeira tentativa no DVWA, inventei uma sintaxe que parecia razoável:
+
+```bash
+# ERRADO — esses parâmetros não existem no Medusa
+-m PAGE:/dvwa/login.php \
+-m FORM:"username=USER&password=PASS&Login=Login" \
+-m FAIL=Login failed
+```
+
+O Medusa respondeu exatamente o que deveria:
+
+```text
+WARNING: Invalid method: PAGE.
+WARNING: Invalid method: FORM.
+WARNING: Invalid method: FAIL=Login failed.
+```
+
+E então — como não reconheceu nenhum parâmetro — caiu no módulo padrão `http`
+(HTTP Basic Auth), que trata **qualquer resposta diferente de `401`** como login
+válido. O DVWA não usa Basic Auth, então responde `200` para tudo.
+
+O resultado:
+
+```text
+ACCOUNT FOUND: [http] ... User: user     Password: sfadmin  [SUCCESS]
+ACCOUNT FOUND: [http] ... User: msfadmin Password: qwerty   [SUCCESS]
+ACCOUNT FOUND: [http] ... User: admin    Password: 123456   [SUCCESS]
+ACCOUNT FOUND: [http] ... User: root     Password: 123456   [SUCCESS]
+```
+
+**Todas** as senhas "funcionaram". Se `admin:123456` e `root:qwerty` fossem
+válidas ao mesmo tempo, não haveria ataque nenhum a fazer — o sinal de alerta
+estava no absurdo do resultado.
+
+O que revelou o erro foi a **validação manual**: abri o DVWA no navegador e o
+login real era `admin` / `password`, não `admin` / `123456`. A divergência entre
+a "descoberta" e a realidade expôs o falso positivo.
+
+**Três lições que levo deste episódio:**
+
+1. **Sintaxe correta:**
+   `-m FORM-DATA:"post?campo1=&campo2=&botao=valor"` mais
+   `-m DENY-SIGNAL:"<texto da falha>"`. É `DENY-SIGNAL`, não `DENIAL-SIGNAL`.
+2. **Módulo correto:** formulário HTML é `web-form`; `http` é para Basic Auth.
+   Escolher errado não gera erro — gera **falso positivo**.
+3. **Nunca confie num resultado sem validar o acesso na mão.** Um print onde
+   *todas* as senhas funcionam é o sintoma clássico de módulo errado ou
+   `DENY-SIGNAL` mal configurado. Validar custa 30 segundos; publicar um
+   resultado falso custa a credibilidade inteira do trabalho.
+
+> 💡 **Por que guardei o print do erro no repositório:** porque ele documenta o
+> raciocínio. Mostrar apenas os acertos não prova competência — qualquer um cola
+> um comando. Mostrar como identifiquei e corrigi um falso positivo prova que eu
+> **sei o que estou olhando**.
 
 ---
 

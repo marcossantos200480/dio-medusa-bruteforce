@@ -108,12 +108,12 @@ ip -4 -brief addr
 # Editar a configuração do NetworkManager
 sudo nmcli connection modify "Wired connection 1" \
   ipv4.method manual \
-  ipv4.addresses 192.168.56.102/24 \
+  ipv4.addresses 192.168.56.101/24 \
   ipv4.gateway "" \
   ipv4.dns ""
 
 sudo nmcli connection up "Wired connection 1"
-ip -4 -brief addr        # deve mostrar 192.168.56.102/24
+ip -4 -brief addr        # deve mostrar 192.168.56.101/24
 ```
 
 Verifique que **não há rota padrão**:
@@ -161,7 +161,7 @@ iface lo inet loopback
 
 auto eth0
 iface eth0 inet static
-    address 192.168.56.101
+    address 192.168.56.102
     netmask 255.255.255.0
     # SEM gateway, SEM dns-nameservers  → isolamento
 ```
@@ -170,7 +170,7 @@ Aplique:
 
 ```bash
 /etc/init.d/networking restart
-ifconfig eth0            # deve mostrar 192.168.56.101
+ifconfig eth0            # deve mostrar 192.168.56.102
 ```
 
 ### Confirmar que os serviços estão no ar
@@ -204,13 +204,13 @@ sudo /etc/init.d/samba restart
 
 ```bash
 # 1. O alvo responde?
-ping -c 3 192.168.56.101
+ping -c 3 192.168.56.102
 
 # 2. As portas do cenário estão abertas?
-nmap -Pn -p 21,80,139,445 192.168.56.101
+nmap -Pn -p 21,80,139,445 192.168.56.102
 
 # 3. O DVWA carrega?
-curl -s -o /dev/null -w "HTTP %{http_code}\n" http://192.168.56.101/dvwa/
+curl -s -o /dev/null -w "HTTP %{http_code}\n" http://192.168.56.102/dvwa/
 ```
 
 Resultado esperado: `HTTP 200` (ou `302` para `login.php`).
@@ -227,7 +227,7 @@ o laboratório não está isolado.
 
 > ✅ O script `scripts/preflight_lab.sh` automatiza todas essas checagens:
 > ```bash
-> ./scripts/preflight_lab.sh --alvo 192.168.56.101 --confirmo-lab -v
+> ./scripts/preflight_lab.sh --alvo 192.168.56.102 --confirmo-lab -v
 > ```
 
 ---
@@ -258,16 +258,16 @@ três cenários rodem nas **mesmas condições**, o que torna os resultados comp
 ## 9. Checklist final antes de atacar
 
 ```text
-[ ] Kali com IP 192.168.56.102/24 e SEM rota padrão
-[ ] Metasploitable com IP 192.168.56.101/24 e SEM gateway
+[ ] Kali com IP 192.168.56.101/24 e SEM rota padrão
+[ ] Metasploitable com IP 192.168.56.102/24 e SEM gateway
 [ ] ping entre as VMs funciona
 [ ] ping para 8.8.8.8 FALHA (isolamento confirmado)
 [ ] nmap mostra 21, 80, 139, 445 abertas no alvo
-[ ] DVWA acessível em http://192.168.56.101/dvwa/
+[ ] DVWA acessível em http://192.168.56.102/dvwa/
 [ ] medusa instalado e módulos ftp/web-form/smbnt presentes
 [ ] wordlists do repositório revisadas
 [ ] snapshot tirado nas duas VMs
-[ ] ./scripts/preflight_lab.sh --alvo 192.168.56.101 --confirmo-lab  → 0 falhas
+[ ] ./scripts/preflight_lab.sh --alvo 192.168.56.102 --confirmo-lab  → 0 falhas
 ```
 
 ---

