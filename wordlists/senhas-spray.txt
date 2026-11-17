@@ -1,0 +1,16 @@
+# =============================================================================
+# senhas-spray.txt - senhas para PASSWORD SPRAYING (uma por rodada)
+# Regra do spraying: POUCAS senhas x MUITOS usuarios.
+# O script scripts/smb_spray.sh percorre este arquivo uma senha por vez,
+# testando-a contra todos os usuarios antes de passar para a proxima.
+# Nunca use estas senhas fora do laboratorio.
+# =============================================================================
+
+# Senhas padrao de laboratorio (Metasploitable / DVWA)
+password
+msfadmin
+Password1
+
+# Padroes de troca de caractere muito comuns em empresas
+Senha@123
+Empresa@2024

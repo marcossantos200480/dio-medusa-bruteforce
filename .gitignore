@@ -1,0 +1,97 @@
+# =============================================================================
+# .gitignore - Laboratorio Medusa / DIO
+# Objetivo: NUNCA versionar credenciais, saidas de ataque ou arquivos pesados.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Segredos e chaves (nunca devem ir para o GitHub)
+# -----------------------------------------------------------------------------
+.env
+.env.*
+*.env
+!.env.exemplo
+*.pem
+*.key
+*.p12
+*.pfx
+*.kdbx
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*.ovpn
+credentials.json
+secrets.*
+token.txt
+
+# -----------------------------------------------------------------------------
+# 2. Logs e saidas do laboratorio
+#    As saidas vao para logs/<data-hora>/ e ficam FORA do versionamento.
+#    Mantemos apenas os arquivos-ancora do diretorio (README e .gitkeep).
+# -----------------------------------------------------------------------------
+logs/*
+!logs/.gitkeep
+!logs/README.md
+*.log
+*.log.*
+*.lst
+*.pot
+*.restore
+medusa-*.txt
+credenciais*.txt
+smb-*.csv
+
+# -----------------------------------------------------------------------------
+# 3. Capturas temporarias / rascunhos
+# -----------------------------------------------------------------------------
+screenshots-tmp/
+capturas-tmp/
+*.png.tmp
+*.jpg.tmp
+*.bak
+*~
+tmp/
+scratch/
+
+# -----------------------------------------------------------------------------
+# 4. Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# -----------------------------------------------------------------------------
+# 5. Editores e sistemas operacionais
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# -----------------------------------------------------------------------------
+# 6. Pacotes / arquivos grandes
+# -----------------------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.iso
+*.ova
+*.vdi
+*.vbox
+
+# -----------------------------------------------------------------------------
+# 7. Artefatos do proprio laboratorio (pastas de saida dos scripts)
+# -----------------------------------------------------------------------------
+/preflight-*.txt
+/resumo-*.txt

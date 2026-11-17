@@ -1,0 +1,26 @@
+# =============================================================================
+# usuarios-smb.txt - usuarios para enumeracao e password spraying SMB
+# Usado por scripts/smb_spray.sh (medusa -M smbnt -U)
+# Formato: um usuario por linha. Linhas com '#' sao comentarios.
+# =============================================================================
+
+# --- Contas padrao do Metasploitable 2 (Samba) -------------------------------
+msfadmin
+user
+postgres
+service
+
+# --- Contas administrativas do Windows/Samba ---------------------------------
+administrator
+admin
+Administrator
+root
+
+# --- Contas comuns e de servico ----------------------------------------------
+guest
+Guest
+test
+teste
+suporte
+usuario
+user1

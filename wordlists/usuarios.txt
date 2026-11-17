@@ -1,0 +1,30 @@
+# =============================================================================
+# usuarios.txt - usuarios comuns para os laboratorios FTP (Medusa -M ftp -U)
+# Formato: um usuario por linha. Linhas com '#' sao comentarios.
+# =============================================================================
+
+# --- Contas padrao do Metasploitable 2 (FTP vsftpd) --------------------------
+msfadmin
+user
+postgres
+service
+
+# --- Contas administrativas classicas ---------------------------------------
+root
+admin
+administrator
+sysadmin
+
+# --- Contas de servico / aplicacao frequentes --------------------------------
+ftp
+ftpuser
+www-data
+apache
+mysql
+oracle
+tomcat
+guest
+test
+teste
+user1
+usuario
